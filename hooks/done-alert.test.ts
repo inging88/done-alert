@@ -66,7 +66,7 @@ test('새 프롬프트를 보내면 배너를 바로 내린다', async ($, on) =
   await ui.unmount()
 })
 
-test('프롬프트에 입력하면 5초 뒤 픽셀이 흩어지며 사라진다', async ($, on) => {
+test('프롬프트에 키를 누르면 곧바로 픽셀이 흩어지며 사라진다', async ($, on) => {
   const clock = engine(on)
   on('prompt.edit', ($, e) => ({ text: e.text + e.inputText, cursor: e.cursor + 1 }))
   await $.turn.complete({ answer: '', durationMs: 5_000, isAborted: false, turnId: 't3', reason: 'answer' } as never)
@@ -76,9 +76,9 @@ test('프롬프트에 입력하면 5초 뒤 픽셀이 흩어지며 사라진다'
 
   // prompt.edit 은 엔진만 올리는 사건이라 타입에 없다. 테스트의 $ 는 그대로 올린다
   await ($.prompt as unknown as { edit: (e: unknown) => Promise<unknown> }).edit({ origin: { kind: 'composer' }, text: '', cursor: 0, start: 0, end: 0, inputText: 'a' } as never)
-  await clock.advance(4_000)
-  expect(await ui.find({ key: 'show' })).toBeDefined()
-  await clock.advance(3_000)
+  await clock.advance(300)
+  expect(await ui.find({ key: 'show' })).toBeDefined() // 흩어지는 중
+  await clock.advance(600)
   expect(await ui.find({ key: 'show' })).toBeUndefined()
   await ui.unmount()
 })

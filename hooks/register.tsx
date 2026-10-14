@@ -33,8 +33,8 @@ const GLYPH = [
 ]
 
 const TICK_MS = 60
-const LINGER_MS = 5000 // 돌아온 뒤 5초
-const DISSOLVE_MS = 1400 // 픽셀이 하나씩 꺼지는 시간
+const LINGER_MS = 0 // 키를 누르면 곧바로 흩어지기 시작한다
+const DISSOLVE_MS = 700 // 픽셀이 하나씩 꺼지는 시간
 const ROWS = 10
 const SIDE = 16 // 큰 글자 양옆에 색종이가 날리는 폭
 const DEFAULT = 0x01000000
@@ -125,7 +125,7 @@ async function show($: Dollar, detail: string) {
   ensureTimer($)
 }
 
-// 사람이 돌아온 신호: 그때부터 5초 뒤에 픽셀이 흩어지며 사라진다
+// 사람이 돌아온 신호: 곧바로 픽셀이 흩어지며 사라진다
 async function markActive($: Dollar) {
   if (shown !== null && leaveAt === null) {
     leaveAt = (await $.clock.now()) + LINGER_MS
