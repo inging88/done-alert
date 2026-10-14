@@ -1,4 +1,4 @@
-import { expect, test } from 'claude-code/testing'
+import { expect, mock, test } from 'claude-code/testing'
 import type { On, RenderPropsOf } from 'claude-code'
 
 const BAND = {
@@ -15,12 +15,14 @@ const BAND = {
 
 // 엔진 대역: 턴 종료와 프롬프트 제출을 그대로 받아 준다
 const engine = (on: On) => {
+  const clock = mock.clock(on, { now: 1_000_000 })
   on('turn.complete', ($, e) => ({ text: e.answer }))
   on('prompt.submit', ($, e) => ({ text: e.text }))
   on('ui.render', ($, e) => {
     const { Text } = $.ui.resolve(e)
     return h(Text, {}, '엔진의 기본 그림') as never
   })
+  return clock
 }
 
 test('턴이 끝나면 완료 글자와 소요시간 · 토큰을 띄운다', async ($, on) => {
@@ -60,6 +62,23 @@ test('새 프롬프트를 보내면 배너를 바로 내린다', async ($, on) =
   await $.prompt.submit({ text: '다음 일' } as never)
 
   const ui = await $.ui.mount({ plugin: 'done-alert', surface: 'terminal', ...BAND })
+  expect(await ui.find({ key: 'show' })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('프롬프트에 입력하면 5초 뒤 픽셀이 흩어지며 사라진다', async ($, on) => {
+  const clock = engine(on)
+  on('prompt.edit', ($, e) => ({ text: e.text + e.inputText, cursor: e.cursor + 1 }))
+  await $.turn.complete({ answer: '', durationMs: 5_000, isAborted: false, turnId: 't3', reason: 'answer' } as never)
+
+  const ui = await $.ui.mount({ plugin: 'done-alert', surface: 'terminal', ...BAND })
+  expect(await ui.find({ key: 'show' })).toBeDefined()
+
+  // prompt.edit 은 엔진만 올리는 사건이라 타입에 없다. 테스트의 $ 는 그대로 올린다
+  await ($.prompt as unknown as { edit: (e: unknown) => Promise<unknown> }).edit({ origin: { kind: 'composer' }, text: '', cursor: 0, start: 0, end: 0, inputText: 'a' } as never)
+  await clock.advance(4_000)
+  expect(await ui.find({ key: 'show' })).toBeDefined()
+  await clock.advance(3_000)
   expect(await ui.find({ key: 'show' })).toBeUndefined()
   await ui.unmount()
 })

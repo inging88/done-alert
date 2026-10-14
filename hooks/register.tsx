@@ -68,6 +68,8 @@ let particles: Particle[] = []
 let serial = 0
 let shown: DoneAlertBanner | null = null
 let columns = 0
+// 엔진 시계로 잰 마지막 시각. Date.now 대신 $.clock 을 써야 테스트의 가짜 시계가 먹는다
+let lastNow = 0
 
 function stop() {
   timer?.cancel()
@@ -88,7 +90,8 @@ async function tick($: Dollar) {
     return
   }
 
-  const now = Date.now()
+  const now = await $.clock.now()
+  lastNow = now
 
   if (leaveAt !== null && now >= leaveAt) {
     dissolve = (now - leaveAt) / DISSOLVE_MS
@@ -112,7 +115,8 @@ function ensureTimer($: Dollar) {
 async function show($: Dollar, detail: string) {
   serial += 1
   shown = { kind: 'done', detail, serial }
-  startedAt = Date.now()
+  startedAt = await $.clock.now()
+  lastNow = startedAt
   lastStepAt = startedAt
   leaveAt = null
   dissolve = 0
@@ -122,9 +126,9 @@ async function show($: Dollar, detail: string) {
 }
 
 // 사람이 돌아온 신호: 그때부터 5초 뒤에 픽셀이 흩어지며 사라진다
-function markActive() {
+async function markActive($: Dollar) {
   if (shown !== null && leaveAt === null) {
-    leaveAt = Date.now() + LINGER_MS
+    leaveAt = (await $.clock.now()) + LINGER_MS
   }
 }
 
@@ -257,23 +261,23 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('prompt.edit', ($, e, next) => {
-    markActive()
+  on('prompt.edit', async ($, e, next) => {
+    await markActive($)
     return next(e)
   })
 
-  on('ui.scroll', ($, e, next) => {
-    markActive()
+  on('ui.scroll', async ($, e, next) => {
+    await markActive($)
     return next(e)
   })
 
-  on('ui.focus', ($, e, next) => {
-    markActive()
+  on('ui.focus', async ($, e, next) => {
+    await markActive($)
     return next(e)
   })
 
-  on('ui.press', ($, e, next) => {
-    markActive()
+  on('ui.press', async ($, e, next) => {
+    await markActive($)
     return next(e)
   })
 
@@ -290,7 +294,7 @@ export const register: Register = on => {
       // 다시 불러온 직후: 저장된 배너로 이어 간다
       shown = current
       serial = Math.max(serial, current.serial)
-      startedAt = Date.now()
+      startedAt = lastNow
       lastStepAt = startedAt
     }
 
@@ -316,7 +320,7 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column">
-        <Raster key="show" columns={columns} rows={ROWS} cells={encode(paint(Date.now()))} />
+        <Raster key="show" columns={columns} rows={ROWS} cells={encode(paint(lastNow))} />
         <Box width={columns} justifyContent="center">
           <Text bold color="success">
             {message}
