@@ -1,0 +1,7 @@
+{
+  "name": "done-alert",
+  "version": "0.1.0",
+  "description": "작업이 끝나면 프롬프트 위에 색이 도는 큰 완료 글자와 양옆 색종이를 띄운다",
+  "types": "./types/index.d.ts",
+  "author": { "name": "inging88" }
+}
