@@ -34,3 +34,8 @@ Claude Code 데스크톱 앱에서는 `/plugin` 이 동작하지 않습니다. �
 
 - mod(함수 훅 플러그인)를 지원하는 Claude Code. 2.1.299 에서 확인했습니다.
 - truecolor 를 지원하는 터미널
+
+## 배너가 안 뜰 때
+
+프롬프트 위 같은 자리에 그림을 그리는 다른 플러그인(예: effortless)이 앞 순서에 서면 이 배너가 가려집니다.
+`~/.claude/settings.json` 의 `enabledPlugins` 에서 `"done-alert@done-alert": true` 를 그 플러그인보다 위로 옮기고 `/reload-plugins` 를 실행하세요.
