@@ -76,9 +76,9 @@ test('프롬프트에 키를 누르면 곧바로 픽셀이 흩어지며 사라�
 
   // prompt.edit 은 엔진만 올리는 사건이라 타입에 없다. 테스트의 $ 는 그대로 올린다
   await ($.prompt as unknown as { edit: (e: unknown) => Promise<unknown> }).edit({ origin: { kind: 'composer' }, text: '', cursor: 0, start: 0, end: 0, inputText: 'a' } as never)
-  await clock.advance(300)
+  await clock.advance(120)
   expect(await ui.find({ key: 'show' })).toBeDefined() // 흩어지는 중
-  await clock.advance(600)
+  await clock.advance(300)
   expect(await ui.find({ key: 'show' })).toBeUndefined()
   await ui.unmount()
 })

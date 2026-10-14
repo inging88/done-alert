@@ -34,7 +34,7 @@ const GLYPH = [
 
 const TICK_MS = 60
 const LINGER_MS = 0 // 키를 누르면 곧바로 흩어지기 시작한다
-const DISSOLVE_MS = 700 // 픽셀이 하나씩 꺼지는 시간
+const DISSOLVE_MS = 300 // 픽셀이 하나씩 꺼지는 시간
 const ROWS = 10
 const SIDE = 16 // 큰 글자 양옆에 색종이가 날리는 폭
 const DEFAULT = 0x01000000
